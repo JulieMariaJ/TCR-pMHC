@@ -52,6 +52,7 @@ X_test = P5_input_list
 y_test = P5_label_list
 
 ########## define data ##########
+
 # collect input and label 
 trainset = []
 for i in range(len(X_train)):
@@ -61,15 +62,24 @@ valset = []
 for i in range(len(X_val)):
   valset.append([np.transpose(X_val[i]), y_val[i]])
 
-# Data loader 
-batchsize = 64
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batchsize, shuffle=True)
-valloader = torch.utils.data.DataLoader(valset, batch_size=batchsize, shuffle=True)
+# prepare data for CV 
+X = np.concatenate([P1_input_list, P2_input_list, P3_input_list, P4_input_list])
+y = np.concatenate([P1_label_list, P2_label_list, P3_label_list, P4_label_list])
+
+dataset = []
+for i in range(len(y)):
+  dataset.append([np.transpose(X[i]), y[i]])
+
+dataset_split = []
+dataset_split.append(dataset[:1526])
+dataset_split.append(dataset[1526:1526+1168])
+dataset_split.append(dataset[1526+1168:1526+1168+1480])
+dataset_split.append(dataset[1526+1168+1480:])
 
 ########## define baseline model (simple CNN) ##########
 
-channels = x_train.shape[1]
-dim_size = x_train.shape[2]
+channels = X_train.shape[2]
+dim_size = X_train.shape[1]
 num_classes = 1
 
 num_filters1 = 100
@@ -105,8 +115,8 @@ print(baseline_net)
 ########## define network for one-hot embedding ##########
 
 # hyper parameters
-channels = x_train.shape[1]
-dim_size = x_train.shape[2]
+channels = x_train.shape[2]
+dim_size = x_train.shape[1]
 num_classes = 1
 
 num_filters1 = 100
@@ -172,6 +182,18 @@ import torch.optim as optim
 
 criterion = nn.BCELoss()  
 optimizer = optim.Adam(net.parameters(), lr=0.001, weight_decay=1e-8)
+
+########## reset weights function ##########
+
+def reset_weights(m):
+  '''
+    Try resetting model weights to avoid
+    weight leakage.
+  '''
+  for layer in m.children():
+   if hasattr(layer, 'reset_parameters'):
+    #print(f'Reset trainable parameters of layer = {layer}')
+    layer.reset_parameters()
 
 ########## Train network ##########
 num_epoch = 5  
