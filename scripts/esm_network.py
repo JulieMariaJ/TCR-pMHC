@@ -90,7 +90,7 @@ padding_conv2 = 1
 channels_GE = x_train_GE.shape[1]
 dim_size_GE = x_train_GE.shape[2]
 
-num_l1 = 300
+num_l1 = 200
 hidden_size = 50
 num_l2 = 100
 
@@ -125,8 +125,8 @@ class Net(nn.Module):
         torch.nn.init.xavier_uniform_(self.l_out.weight)
 
         #dropout
-        self.dropout_cnn_lstm = nn.Dropout(0.1)
-        self.dropout_linear = nn.Dropout(0.2)
+        self.dropout_cnn_lstm = nn.Dropout(0.2)
+        self.dropout_linear = nn.Dropout(0.5)
 
         # maxpool
         self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
@@ -146,7 +146,7 @@ class Net(nn.Module):
         x_emb = self.conv_bn2(x_emb)
         x_emb = self.dropout_cnn_lstm(x_emb)
         
-        # LSTM
+        # bi-LSTM
         x_emb = x_emb.transpose_(2, 1)
         x_emb, (h, c) = self.rnn(x_emb)
         cat = torch.cat((h[-2, :, :], h[-1, :, :]), dim=1)
@@ -208,7 +208,7 @@ master_train_losses, master_val_losses = [], []
 master_train_aucs, master_val_aucs = [], []
 
 for fold, sample in enumerate(dataset_split):  
-  # Print
+    # Print
     print(f'FOLD {fold}')
     print('--------------------------------')
 
@@ -218,7 +218,8 @@ for fold, sample in enumerate(dataset_split):
     # Define data loaders for training and validation data in this fold
     trainloader_fold = torch.utils.data.DataLoader(
                         train_set_flat, 
-                        batch_size=64)
+                        batch_size=64,
+                        shuffle=True)
     
     x_train_emb, x_train_LE, x_train_GE, y_train = next(iter(trainloader_fold))
     
@@ -229,7 +230,8 @@ for fold, sample in enumerate(dataset_split):
 
     valloader_fold = torch.utils.data.DataLoader(
                         dataset_split[fold],
-                        batch_size=64)
+                        batch_size=64,
+                        shuffle=True)
     
     net.apply(reset_weights) # reset weights 
     
@@ -303,6 +305,7 @@ for fold, sample in enumerate(dataset_split):
                 val_loss += val_batch_loss.item()
         
         val_losses.append(val_loss / len(valloader_fold.dataset))
+        print("validation loss:",val_loss/len(valloader_fold.dataset))
  
         train_acc_cur = accuracy_score(train_targets, train_preds)
         valid_acc_cur = accuracy_score(val_targets, val_preds)
@@ -311,9 +314,9 @@ for fold, sample in enumerate(dataset_split):
         valid_acc.append(valid_acc_cur)
 
         # AUC
-        fpr_train, tpr_train, threshold_train = metrics.roc_curve(train_targets, train_preds)
+        fpr_train, tpr_train, threshold_train = metrics.roc_curve(train_targets, train_preds_sig)
         roc_auc_train = metrics.auc(fpr_train, tpr_train)
-        fpr_val, tpr_val, threshold_val = metrics.roc_curve(val_targets, val_preds)
+        fpr_val, tpr_val, threshold_val = metrics.roc_curve(val_targets, val_preds_sig)
         roc_auc_val = metrics.auc(fpr_val, tpr_val)
         train_aucs.append(roc_auc_train)
         val_aucs.append(roc_auc_val)
@@ -336,7 +339,6 @@ for fold, sample in enumerate(dataset_split):
             print("Early stopping\n")
             break
 
-
     #save intermediate models 
     best_nets.append(best_net)
     torch.save(best_net, 'best_net{0}.pth'.format(fold))
@@ -344,7 +346,6 @@ for fold, sample in enumerate(dataset_split):
     best_val_preds_list.append(best_val_preds)
     best_train_targets_list.append(best_train_targets)
     best_train_preds_list.append(best_train_preds)
-
     best_train_preds_sig_list.append(best_train_preds_sig)
     best_val_preds_sig_list.append(best_val_preds_sig)
 
@@ -357,11 +358,11 @@ for fold, sample in enumerate(dataset_split):
     master_val_aucs.append(val_aucs)
 
     # best AUC per fold 
-    fpr_train, tpr_train, threshold_train = metrics.roc_curve(best_train_targets, best_train_preds)
+    fpr_train, tpr_train, threshold_train = metrics.roc_curve(best_train_targets, best_train_preds_sig)
     roc_auc_train = metrics.auc(fpr_train, tpr_train)
     train_results[fold + 1] = roc_auc_train
     
-    fpr_val, tpr_val, threshold_val = metrics.roc_curve(best_val_targets, best_val_preds)
+    fpr_val, tpr_val, threshold_val = metrics.roc_curve(best_val_targets, best_val_preds_sig)
     roc_auc_val = metrics.auc(fpr_val, tpr_val)
     val_results[fold + 1] = roc_auc_val
   
@@ -378,6 +379,39 @@ for key, value in val_results.items():
 print(f'Average: {sum_val/len(val_results.items())} %')
 
 ########## Test network ##########
+
+# load test set 
+P5input = np.load('drive/My Drive/Deep learning project/data/P5_input.npz')
+P5label = np.load('drive/My Drive/Deep learning project/data/P5_labels.npz')
+X_test = list(P5input.values())[0]
+y_test = list(P5label.values())[0]
+
+# load test embeddings 
+X_test_emb = np.load("drive/My Drive/Deep learning project/data/test_emb_pca.npz")
+X_test_emb = list(X_test_emb.values())[0]
+
+# get test energies 
+X_test_localE = [] 
+X_test_globalE = [] 
+
+for sample in X_test:
+  locals = []
+  globals = []
+  count = 1
+
+  for i in range(len(sample)):
+    if count >= 179:
+      locals.append(sample[i][20:27])
+      globals.append(sample[i][27:])
+    count += 1
+
+  X_test_localE.append(locals)
+  X_test_globalE.append(globals)
+
+X_test_localE = np.array(X_test_localE)
+X_test_globalE = np.array(X_test_globalE)
+
+# collect test data
 testset = []
 for i in range(len(X_test)):
   testset.append([np.transpose(X_test_emb[i]), np.transpose(X_test_localE[i]), np.transpose(X_test_globalE[i]), y_test[i]])
@@ -385,38 +419,16 @@ for i in range(len(X_test)):
 batchsize = 64
 testloader = torch.utils.data.DataLoader(testset, batch_size=batchsize, shuffle=True)
 
-# test best model 
-net_best = torch.load('best_net3.pth') #filename on saved best model
-c = 3
-test_probs, test_preds, test_targs = [], [], []
-with torch.no_grad():
-    for batch_idx, (emb, LE, GE, target) in enumerate(testloader):
-        emb_test = emb.float().detach().requires_grad_(True).cuda()
-        LE_test = LE.float().detach().requires_grad_(True).cuda()
-        GE_test = GE.float().detach().requires_grad_(True).cuda()
-        labels_test = torch.tensor(np.array(target), dtype=torch.float).unsqueeze(1).cuda()
-      
-        output = net_best(emb_test, LE_test, GE_test)
-
-        test_batch_loss = criterion(output['out'], labels_test)
-
-        test_predicts = np.round(output['out'].detach().cpu())
-        test_targs += list(np.array(labels_test.cpu()))
-        test_preds += list(test_predicts.numpy().flatten())
-
-fpr_test, tpr_test, threshold_test = metrics.roc_curve(test_targs, test_preds)
-roc_auc_test = metrics.auc(fpr_test, tpr_test)
-print("Test AUC:", roc_auc_test)
-print("Test MCC:", matthews_corrcoef(test_targs, test_preds))
-
 ########## concatenate best models per fold ##########
 
 all_test_preds, all_test_targs = [], []
+all_test_preds_sig = []
 
 for i in range(4):
     cur_net = torch.load('best_net'+str(i)+'.pth')
 
     test_preds, test_targs = [], []
+    test_preds_sig = []
     with torch.no_grad():
         for batch_idx, (emb, LE, GE, target) in enumerate(testloader):
             emb_test = emb.float().detach().requires_grad_(True).cuda()
@@ -429,24 +441,36 @@ for i in range(4):
             test_batch_loss = criterion(output['out'], labels_test)
 
             test_predicts = np.round(output['out'].detach().cpu())
+            test_predicts_sig = output['out'].detach().cpu()
             test_targs += list(np.array(labels_test.cpu()))
             test_preds += list(test_predicts.numpy().flatten())
+            test_preds_sig += list(test_predicts_sig.numpy().flatten())
 
     all_test_preds.append(test_preds)
+    all_test_preds_sig.append(test_preds_sig)
     all_test_targs.append(test_targs)  
 
 all_test_preds = sum(all_test_preds, [])
+all_test_preds_sig = sum(all_test_preds_sig, [])
 all_test_targs = sum(all_test_targs, [])
 
-fpr_test, tpr_test, threshold_test = metrics.roc_curve(all_test_targs, all_test_preds)
+fpr_test, tpr_test, threshold_test = metrics.roc_curve(all_test_targs, all_test_preds_sig)
 roc_auc_test = metrics.auc(fpr_test, tpr_test)
 print("Test AUC:", roc_auc_test)
 print("Test MCC:", matthews_corrcoef(all_test_targs, all_test_preds))
 
 ########## Performance ##########
 
-#plot learning curve based on AUC
+# plot learning curve based on loss
+c = 0
+epoch = np.arange(len(master_train_losses[c]))
+plt.figure()
+plt.plot(epoch, master_train_losses[c], 'r', epoch, master_val_losses[c], 'b')
+plt.legend(['Train loss','Validation loss'])
+plt.xlabel('Epochs'), plt.ylabel('Loss')
+plt.show()
 
+# plot learning curve based on AUC
 epoch = np.arange(len(master_train_aucs[c]))
 plt.figure()
 plt.plot(epoch, master_train_aucs[c], 'r', epoch, master_val_aucs[c], 'b')
@@ -455,7 +479,6 @@ plt.xlabel('Epochs'), plt.ylabel('AUC')
 plt.show()
 
 # plot AUC 
-
 def plot_roc(targets, predictions, filename):
     """ function for plitting AUC """
     # ROC
@@ -474,12 +497,11 @@ def plot_roc(targets, predictions, filename):
     plt.xlabel('False Positive Rate')
     plt.show()
 
-# plot
+# plot ROC-curve for concatenated results
 best_train_targets_list_cat = sum(best_train_targets_list, [])
 best_train_preds_list_cat = sum(best_train_preds_list, [])
 best_val_targets_list_cat = sum(best_val_targets_list, [])
 best_val_preds_list_cat = sum(best_val_preds_list, [])
-
 best_train_preds_sig_list_cat = sum(best_train_preds_sig_list, [])
 best_val_preds_sig_list_cat = sum(best_val_preds_sig_list, [])
 
