@@ -5,14 +5,17 @@ from sklearn.decomposition import PCA
 
 ########## load embeddings ##########
 
-train_FASTA_PATH = "/zhome/77/7/127802/data/train_pTCR_seq.fasta"
-train_EMB_PATH = "/zhome/77/7/127802/data/train_pTCR_emb_esm1b/"
+#define your path 
+PATH = "/zhome/77/7/127802/data/"
 
-val_FASTA_PATH = "/zhome/77/7/127802/data/val_pTCR_seq.fasta"
-val_EMB_PATH = "/zhome/77/7/127802/data/val_pTCR_emb_esm1b/"
+train_FASTA_PATH = PATH + "train_pTCR_seq.fasta"
+train_EMB_PATH = PATH + "train_pTCR_emb_esm1b/"
 
-test_FASTA_PATH = "/zhome/77/7/127802/data/test_sequences.fasta"
-test_EMB_PATH = "/zhome/77/7/127802/data/test_pTCR_emb_esm1b/"
+val_FASTA_PATH = PATH + "val_pTCR_seq.fasta"
+val_EMB_PATH = PATH + "val_pTCR_emb_esm1b/"
+
+test_FASTA_PATH = PATH + "test_sequences.fasta"
+test_EMB_PATH = PATH + "test_pTCR_emb_esm1b/"
 
 ########## extract representations ##########
 
@@ -51,9 +54,9 @@ Xs_mean_test = torch.stack(test_X_mean, dim=0).numpy()
 Xs_tok_test = torch.stack(test_X_tok, dim=0).numpy()
 
 # save mean representations
-savez_compressed("/zhome/77/7/127802/data/Xtrain_meanRep.npz", Xs_mean_train)
-savez_compressed("/zhome/77/7/127802/data/Xval_meanRep.npz", Xs_mean_val)
-savez_compressed("/zhome/77/7/127802/data/Xtest_meanReo.npz", Xs_mean_test)
+savez_compressed(PATH+"Xtrain_meanRep.npz", Xs_mean_train)
+savez_compressed(PATH+"Xval_meanRep.npz", Xs_mean_val)
+savez_compressed(PATH+"Xtest_meanReo.npz", Xs_mean_test)
 
 ########## PCA ##########
 
@@ -75,6 +78,6 @@ Xs_test_pca = pca.transform(Xs_test_2d)
 Xs_test_pca = np.reshape(Xs_test_pca, (Xs_tok_test.shape[0], Xs_tok_test.shape[1], 100))
 
 #save pca representations
-savez_compressed("/zhome/77/7/127802/data/train_emb_pca.npz", Xs_after_pca)
-savez_compressed("/zhome/77/7/127802/data/val_emb_pca.npz", Xs_val_pca)
-savez_compressed("/zhome/77/7/127802/data/test_emb_pca.npz", Xs_test_pca)
+savez_compressed(PATH+"train_emb_pca.npz", Xs_after_pca)
+savez_compressed(PATH+"val_emb_pca.npz", Xs_val_pca)
+savez_compressed(PATH+"test_emb_pca.npz", Xs_test_pca)
