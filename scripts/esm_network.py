@@ -15,11 +15,14 @@ from sklearn.metrics import accuracy_score
 
 ########## load data ##########
 
+#define your path 
+PATH = "drive/My Drive/Deep learning project/data/"
+
 # load y-values 
-y_train1 = np.load("drive/My Drive/Deep learning project/data/P1_labels.npz")
-y_train2 = np.load("drive/My Drive/Deep learning project/data/P2_labels.npz")
-y_train3 = np.load("drive/My Drive/Deep learning project/data/P3_labels.npz")
-y_val = np.load("drive/My Drive/Deep learning project/data/P4_labels.npz")
+y_train1 = np.load(PATH+"P1_labels.npz")
+y_train2 = np.load(PATH+"P2_labels.npz")
+y_train3 = np.load(PATH+"P3_labels.npz")
+y_val = np.load(PATH+"P4_labels.npz")
 
 y_train1 = list(y_train1.values())[0]
 y_train2 = list(y_train2.values())[0]
@@ -29,22 +32,22 @@ y_val = list(y_val.values())[0]
 y_train = np.concatenate([y_train1, y_train2, y_train3])
 
 # load embeddings 
-X_train_emb = np.load("drive/My Drive/Deep learning project/data/train_emb_pca.npz")
-X_val_emb = np.load("drive/My Drive/Deep learning project/data/val_emb_pca.npz")
+X_train_emb = np.load(PATH+"train_emb_pca.npz")
+X_val_emb = np.load(PATH+"val_emb_pca.npz")
 
 X_train_emb = list(X_train_emb.values())[0]
 X_val_emb = list(X_val_emb.values())[0]
 
 # load local energies 
-X_train_LE = np.load("drive/My Drive/Deep learning project/data/train_local_energies.npz")
-X_val_LE = np.load("drive/My Drive/Deep learning project/data/val_local_energies.npz")
+X_train_LE = np.load(PATH+"train_local_energies.npz")
+X_val_LE = np.load(PATH+"val_local_energies.npz")
 
 X_train_LE = list(X_train_LE.values())[0]
 X_val_LE = list(X_val_LE.values())[0]
 
 # load global energies 
-X_train_GE = np.load("drive/My Drive/Deep learning project/data/train_global_energies.npz")
-X_val_GE = np.load("drive/My Drive/Deep learning project/data/val_global_energies.npz")
+X_train_GE = np.load(PATH+"train_global_energies.npz")
+X_val_GE = np.load(PATH+"val_global_energies.npz")
 
 X_train_GE = list(X_train_GE.values())[0]
 X_val_GE = list(X_val_GE.values())[0]
