@@ -13,17 +13,20 @@ from sklearn.metrics import accuracy_score
 
 ########## load data ##########
 
+#define your path 
+PATH = "drive/My Drive/Deep learning project/data/"
+
 # load data 
-P1input = np.load('drive/My Drive/Deep learning project/data/P1_input.npz')
-P1label = np.load('drive/My Drive/Deep learning project/data/P1_labels.npz')
-P2input = np.load('drive/My Drive/Deep learning project/data/P2_input.npz')
-P2label = np.load('drive/My Drive/Deep learning project/data/P2_labels.npz')
-P3input = np.load('drive/My Drive/Deep learning project/data/P3_input.npz')
-P3label = np.load('drive/My Drive/Deep learning project/data/P3_labels.npz')
-P4input = np.load('drive/My Drive/Deep learning project/data/P4_input.npz')
-P4label = np.load('drive/My Drive/Deep learning project/data/P4_labels.npz')
-P5input = np.load('drive/My Drive/Deep learning project/data/P5_input.npz')
-P5label = np.load('drive/My Drive/Deep learning project/data/P5_labels.npz')
+P1input = np.load(PATH+'P1_input.npz')
+P1label = np.load(PATH+'P1_labels.npz')
+P2input = np.load(PATH+'P2_input.npz')
+P2label = np.load(PATH+'P2_labels.npz')
+P3input = np.load(PATH+'P3_input.npz')
+P3label = np.load(PATH+'P3_labels.npz')
+P4input = np.load(PATH+'P4_input.npz')
+P4label = np.load(PATH+'P4_labels.npz')
+P5input = np.load(PATH+'P5_input.npz')
+P5label = np.load(PATH+'P5_labels.npz')
 
 # convert to list 
 P1_input_list = list(P1input.values())[0]
