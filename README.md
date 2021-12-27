@@ -17,4 +17,5 @@ With the dim_reduction.py script, the dimensionalities of the per token represen
 
 #### Run model 
 See "Model_with_onehot.ipynb" for model trained on one-hot encoded sequences. The code can be executed by clicking on the icon below:
+
 [<img src="https://colab.research.google.com/assets/colab-badge.svg">](https://colab.research.google.com/github/JulieMariaJ/TCR-pMHC/blob/main/Model_with_onehot.ipynb)
