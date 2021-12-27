@@ -56,7 +56,7 @@ Xs_tok_test = torch.stack(test_X_tok, dim=0).numpy()
 # save mean representations
 savez_compressed(PATH+"Xtrain_meanRep.npz", Xs_mean_train)
 savez_compressed(PATH+"Xval_meanRep.npz", Xs_mean_val)
-savez_compressed(PATH+"Xtest_meanReo.npz", Xs_mean_test)
+savez_compressed(PATH+"Xtest_meanRep.npz", Xs_mean_test)
 
 ########## PCA ##########
 
