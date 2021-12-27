@@ -13,4 +13,8 @@ python3 extract.py esm1b_t33_650M_UR50S train_sequences.fasta train_seq_emb_esm1
 
 With the dim_reduction.py script, the dimensionalities of the per token representations can be reduced with a Principal Component Analysis (PCA) that reduces the 1280 features to 100 features to minimize memory usage.
 
+
+
+#### Run model 
+See "Model_with_onehot.ipynb" for model trained on one-hot encoded sequences. The code can be executed by clicking on the icon below:
 [<img src="https://colab.research.google.com/assets/colab-badge.svg">](https://colab.research.google.com/github/JulieMariaJ/TCR-pMHC/blob/main/Model_with_onehot.ipynb)
