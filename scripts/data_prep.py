@@ -34,18 +34,18 @@ def split_data(X):
     for sample in X:
         X_seq.append(onehot_to_seq(sample)) # convert one-hot to sequence
 
-    locals = []
-    globals = []
-    count = 1
+        locals = []
+        globals = []
+        count = 1
 
-    for i in range(len(sample)):
-        if count >= 179:
-            locals.append(sample[i][20:27])
-            globals.append(sample[i][27:])
-            count += 1
+        for i in range(len(sample)):
+            if count >= 179:
+                locals.append(sample[i][20:27])
+                globals.append(sample[i][27:])
+                count += 1
 
-    X_localE.append(locals)
-    X_globalE.append(globals)
+        X_localE.append(locals)
+        X_globalE.append(globals)
 
     return X_seq, X_localE, X_globalE
 
