@@ -7,6 +7,6 @@ The data_prep.py script is firstly used to split the given data into sequences, 
 
 The ESM-1b position embeddings can then be extracted for each amino acid of the sequences with the extract.py script taking the fasta files as input. As this requires much computational power, this can for instance be done in  
 
-'''
+```
 python3 extract.py esm1b_t33_650M_UR50S train_sequences.fasta train_seq_emb_esm1b/ --repr_layers 33 --include mean per_tok
-'''
+```
