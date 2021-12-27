@@ -42,7 +42,7 @@ def split_data(X):
             if count >= 179:
                 locals.append(sample[i][20:27])
                 globals.append(sample[i][27:])
-                count += 1
+            count += 1
 
         X_localE.append(locals)
         X_globalE.append(globals)
